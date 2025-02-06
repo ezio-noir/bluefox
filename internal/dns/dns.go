@@ -25,7 +25,7 @@ func worker(domain string, inChan chan string, outChan chan message.ResultMessag
 
 	for subdomain := range inChan {
 		host := fmt.Sprintf("%s.%s", subdomain, domain)
-		fmt.Printf("[DNS] tries %s\n", host)
+		// fmt.Printf("[DNS] tries %s\n", host)
 		if addrs, err := net.LookupHost(host); err != nil {
 			outChan <- &DNSResultMessage{
 				Success:   false,
@@ -42,20 +42,34 @@ func worker(domain string, inChan chan string, outChan chan message.ResultMessag
 	}
 }
 
-func (b *DNSBruteforcer) Run(inChan chan string, outChan chan message.ResultMessage) chan struct{} {
-	done := make(chan struct{})
-	wg := new(sync.WaitGroup)
+// func (b *DNSBruteforcer) Run(inChan chan string, outChan chan message.ResultMessage) chan struct{} {
+// 	done := make(chan struct{})
+// 	wg := new(sync.WaitGroup)
 
-	for i := 1; i <= b.numWorkers; i++ {
-		wg.Add(1)
-		go worker(b.domain, inChan, outChan, wg)
+// 	for i := 1; i <= b.numWorkers; i++ {
+// 		wg.Add(1)
+// 		go worker(b.domain, inChan, outChan, wg)
+// 	}
+
+// 	go func() {
+// 		wg.Wait()
+// 		close(outChan)
+// 		close(done)
+// 	}()
+
+// 	return done
+// }
+
+func (b *DNSBruteforcer) Runner(inChannel chan string, outChannel chan message.ResultMessage) func() {
+	return func() {
+		defer close(outChannel)
+
+		workersDone := new(sync.WaitGroup)
+		workersDone.Add(b.numWorkers)
+		for i := 1; i <= b.numWorkers; i++ {
+			go worker(b.domain, inChannel, outChannel, workersDone)
+		}
+
+		workersDone.Wait()
 	}
-
-	go func() {
-		wg.Wait()
-		close(outChan)
-		close(done)
-	}()
-
-	return done
 }

@@ -2,7 +2,6 @@ package reader
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strings"
 )
@@ -17,14 +16,37 @@ func NewTXTReader(filePath string) *TXTReader {
 	}
 }
 
-func (r *TXTReader) Run(outChan chan string) chan struct{} {
-	done := make(chan struct{})
+// func (r *TXTReader) Run(outChan chan string) chan struct{} {
+// 	done := make(chan struct{})
 
-	go func() {
-		defer func() {
-			close(outChan)
-			close(done)
-		}()
+// 	go func() {
+// 		defer func() {
+// 			close(outChan)
+// 			close(done)
+// 		}()
+
+// 		file, err := os.Open(r.filePath)
+// 		if err != nil {
+// 			return
+// 		}
+// 		defer file.Close()
+
+// 		scanner := bufio.NewScanner(file)
+// 		for scanner.Scan() {
+// 			word := strings.TrimSpace(scanner.Text())
+// 			if word != "" {
+// 				fmt.Printf("Reader emits %s\n", word)
+// 				outChan <- word
+// 			}
+// 		}
+// 	}()
+
+// 	return done
+// }
+
+func (r *TXTReader) Emitter(outChannel chan string) func() {
+	return func() {
+		defer close(outChannel)
 
 		file, err := os.Open(r.filePath)
 		if err != nil {
@@ -36,11 +58,8 @@ func (r *TXTReader) Run(outChan chan string) chan struct{} {
 		for scanner.Scan() {
 			word := strings.TrimSpace(scanner.Text())
 			if word != "" {
-				fmt.Printf("Reader emits %s\n", word)
-				outChan <- word
+				outChannel <- word
 			}
 		}
-	}()
-
-	return done
+	}
 }
