@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 )
 
 // Path to wordlist (txt)
@@ -37,7 +39,6 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&wordlistPath, "wordlist", "w", "", "wordlist (required)")
-	rootCmd.MarkPersistentFlagRequired("wordlist")
 
 	rootCmd.PersistentFlags().StringVarP(&outputPath, "output", "o", "", "output path")
 
@@ -49,6 +50,17 @@ func init() {
 	rootCmd.AddCommand(dirCmd)
 }
 
+func requireWordlist() error {
+	if wordlistPath == "" {
+		return fmt.Errorf("missing wordlist")
+	}
+	return nil
+}
+
 func Execute() error {
 	return rootCmd.Execute()
+}
+
+func GenDoc() {
+	doc.GenMarkdownTree(rootCmd, "./doc")
 }

@@ -10,9 +10,13 @@ import (
 )
 
 var dnsCmd = &cobra.Command{
-	Use:   "dns",
+	Use:   "dns <domain>",
 	Short: "Bruteforce subdomains",
 	Args:  cobra.ExactArgs(1),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		err := requireWordlist()
+		return err
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		txtReader := reader.NewTXTReader(wordlistPath)
 
@@ -37,4 +41,8 @@ var dnsCmd = &cobra.Command{
 			runner.Run(writeManager.Receiver(writeChan)),
 		)
 	},
+}
+
+func init() {
+	dnsCmd.MarkPersistentFlagRequired("wordlist")
 }

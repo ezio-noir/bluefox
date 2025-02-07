@@ -13,9 +13,13 @@ import (
 var timeoutSec uint
 
 var dirCmd = &cobra.Command{
-	Use:   "dir",
+	Use:   "dir <baseurl>",
 	Short: "Bruteforce directories",
 	Args:  cobra.ExactArgs(1),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		err := requireWordlist()
+		return err
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		txtReader := reader.NewTXTReader(wordlistPath)
 
