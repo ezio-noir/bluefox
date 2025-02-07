@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/ezio-noir/bluefox/internal/dns"
 	"github.com/ezio-noir/bluefox/internal/message"
 	"github.com/ezio-noir/bluefox/internal/reader"
@@ -16,36 +14,22 @@ var dnsCommand = &cobra.Command{
 	Short: "Bruteforce subdomains",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		domain := args[0]
-		fmt.Printf("Running the dns command for domain %s...\n", domain)
-
 		txtReader := reader.NewTXTReader(wordlistPath)
 
-		bruteforcer := dns.NewDNSBruteforcer(domain, 5)
+		domain := args[0]
+		bruteforcer := dns.NewDNSBruteforcer(domain, numThreads)
 
-		writeManager := writer.WriteManager{}
-		writeManager.AddWriter(writer.NewConsoleWriter())
-
-		fmt.Printf("Output path: %s\n", outputDir)
-		if outputDir != "" {
-			for _, ext := range outputFormats {
-				writeManager.AddFileWriter(outputDir, outputName, ext)
+		writeManager := writer.NewWriteManager(outputDir, outputName)
+		if outputPath == "" {
+			writeManager.AddFormat("std")
+		} else {
+			for _, format := range outputFormats {
+				writeManager.AddFormat(format)
 			}
 		}
 
-		readChan := make(chan string, 5)
+		readChan := make(chan string, numThreads)
 		writeChan := make(chan message.ResultMessage)
-
-		// // txtReaderDone := txtReader.Run(readChan)
-		// txtReaderDone := runner.Run(txtReader.Emitter(readChan))
-		// // bruteforcerDone := bruteforcer.Run(readChan, writeChan)
-		// bruteforcerDone := runner.Run(bruteforcer.Runner(readChan, writeChan))
-		// // writeManagerDone := writeManager.Run(writeChan)
-		// writeManagerDone := runner.Run(writeManager.Receiver(writeChan))
-
-		// <-txtReaderDone
-		// <-bruteforcerDone
-		// <-writeManagerDone
 
 		runner.WaitAll(
 			runner.Run(txtReader.Emitter(readChan)),

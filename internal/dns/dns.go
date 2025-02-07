@@ -42,24 +42,6 @@ func worker(domain string, inChan chan string, outChan chan message.ResultMessag
 	}
 }
 
-// func (b *DNSBruteforcer) Run(inChan chan string, outChan chan message.ResultMessage) chan struct{} {
-// 	done := make(chan struct{})
-// 	wg := new(sync.WaitGroup)
-
-// 	for i := 1; i <= b.numWorkers; i++ {
-// 		wg.Add(1)
-// 		go worker(b.domain, inChan, outChan, wg)
-// 	}
-
-// 	go func() {
-// 		wg.Wait()
-// 		close(outChan)
-// 		close(done)
-// 	}()
-
-// 	return done
-// }
-
 func (b *DNSBruteforcer) Runner(inChannel chan string, outChannel chan message.ResultMessage) func() {
 	return func() {
 		defer close(outChannel)
