@@ -9,7 +9,7 @@ type DNSResultMessage struct {
 }
 
 func (m DNSResultMessage) String() string {
-	return fmt.Sprintf("%s (%v)", m.Host, m.Addresses)
+	return fmt.Sprintf("%s\t(%v)", m.Host, m.Addresses)
 }
 
 func (m DNSResultMessage) CSV() string {

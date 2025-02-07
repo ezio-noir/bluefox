@@ -45,7 +45,8 @@ func init() {
 
 	rootCmd.PersistentFlags().IntVarP(&numThreads, "threads", "t", 5, "number of threads")
 
-	rootCmd.AddCommand(dnsCommand)
+	rootCmd.AddCommand(dnsCmd)
+	rootCmd.AddCommand(dirCmd)
 }
 
 func Execute() error {

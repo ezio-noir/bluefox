@@ -25,7 +25,6 @@ func worker(domain string, inChan chan string, outChan chan message.ResultMessag
 
 	for subdomain := range inChan {
 		host := fmt.Sprintf("%s.%s", subdomain, domain)
-		// fmt.Printf("[DNS] tries %s\n", host)
 		if addrs, err := net.LookupHost(host); err != nil {
 			outChan <- &DNSResultMessage{
 				Success:   false,

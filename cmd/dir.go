@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/ezio-noir/bluefox/internal/dns"
+	"github.com/ezio-noir/bluefox/internal/dir"
 	"github.com/ezio-noir/bluefox/internal/message"
 	"github.com/ezio-noir/bluefox/internal/reader"
 	"github.com/ezio-noir/bluefox/internal/runner"
@@ -9,15 +9,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var dnsCmd = &cobra.Command{
-	Use:   "dns",
-	Short: "Bruteforce subdomains",
+// Timeout for requests (seconds)
+var timeoutSec uint
+
+var dirCmd = &cobra.Command{
+	Use:   "dir",
+	Short: "Bruteforce directories",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		txtReader := reader.NewTXTReader(wordlistPath)
 
-		domain := args[0]
-		bruteforcer := dns.NewDNSBruteforcer(domain, numThreads)
+		baseURL := args[0]
+		bruteforcer := dir.NewDirBruteforcer(baseURL, timeoutSec, numThreads)
 
 		writeManager := writer.NewWriteManager(outputDir, outputName)
 		if outputPath == "" {
@@ -37,4 +40,8 @@ var dnsCmd = &cobra.Command{
 			runner.Run(writeManager.Receiver(writeChan)),
 		)
 	},
+}
+
+func init() {
+	dirCmd.PersistentFlags().UintVar(&timeoutSec, "timeout", 5, "timeout for HTTP request (default 5 seconds)")
 }
